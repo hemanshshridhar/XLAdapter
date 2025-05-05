@@ -1,0 +1,9 @@
+langchain==0.3.24
+langchain-community==0.3.22
+langchain-openai==0.3.14
+psycopg2-binary==2.9.10
+openpyxl==3.1.5
+python-docx==1.1.2
+PyPDF2==3.0.1
+azure-core==1.33.0
+azure-storage-blob==12.25.1
