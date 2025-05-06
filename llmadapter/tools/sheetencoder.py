@@ -1,66 +1,92 @@
 import pandas as pd
 from openpyxl import load_workbook
 from typing import Dict, List, Any
-
+import json
 
 class SheetEncoder:
     def __init__(self):
         pass
 
-    def encode_sheet(self, filename: str, sheetnames: List[str]) -> Dict[str, Any]:
+    def encode_sheet_with_formula_and_value(self, filename: str, sheet_names: List[str] = None) -> str:
         """
-        Extracts values and their cell addresses from each given sheet and
-        returns a structured dictionary.
+        Extracts values, formulas, and cell addresses from specified sheets
+        of an Excel file and returns a structured JSON string.
         """
+        wb_formula = load_workbook(filename, keep_vba=True)
         wb_value = load_workbook(filename, data_only=True)
 
-        result = []
+        if sheet_names is None:
+            sheet_names = wb_formula.sheetnames
 
-        for sheet_name in sheetnames:
-            if sheet_name not in wb_value.sheetnames:
-                raise ValueError(f"Sheet '{sheet_name}' not found in {filename}")
+        excel_data = {
+            "workbook_name": filename,
+            "sheets": []
+        }
 
+        for sheet_name in sheet_names:
+            if sheet_name not in wb_formula.sheetnames:
+                print(f"Warning: Sheet '{sheet_name}' not found in workbook.")
+                continue
+
+            sheet_formula = wb_formula[sheet_name]
             sheet_value = wb_value[sheet_name]
-            sheet_data = self._encode(sheet_value)
-            sheet_data = sheet_data.dropna(subset=["Value"])
 
-            sheet_dictionary = {}
+            sheet_data = {
+                "name": sheet_name,
+                "cell_data": []
+            }
 
-            for _, row in sheet_data.iterrows():
-                val = str(row["Value"])
-                addr = row["Address"]
+            for row in sheet_formula.iter_rows():
+                for cell_formula in row:
+                    coord = cell_formula.coordinate
+                    cell_value = sheet_value[coord]
 
-                if val in sheet_dictionary:
-                    sheet_dictionary[val].append(addr)
-                else:
-                    sheet_dictionary[val] = [addr]
+                    if cell_formula.value is None and cell_value.value is None:
+                        continue
 
-            
-            sheet_dictionary = {k: v for k, v in sheet_dictionary.items() if k.lower() != "nan"}
+                    cell_info = {
+                        "address": coord,
+                        "value": cell_value.value,
+                        "formula": str(cell_formula.value) if cell_formula.data_type == 'f' else None
+                    }
 
-            result.append({
-                "sheet_name": sheet_name,
-                "data": sheet_dictionary
-            })
+                    sheet_data["cell_data"].append(cell_info)
 
-        return result
+            excel_data["sheets"].append(sheet_data)
 
-    def _encode(self, sheet) -> pd.DataFrame:
+        return json.dumps(excel_data, indent=4)
+
+    def extract_parameter_dict_from_excel(self, sheet_path: str) -> Dict[str, Dict[str, Any]]:
         """
-        Encodes a single worksheet's values and cell addresses.
+        Extracts a nested dictionary from an Excel sheet of the form:
+        {
+            "SheetName": {
+                "Parameter Name": "Mean Value"
+            }
+        }
         """
-        markdown = pd.DataFrame(columns=['Value', 'Address'])
+        wb = load_workbook(sheet_path, data_only=True)
+        ws = wb.active  # Use the first sheet
 
-        for row in sheet.iter_rows():
-            for cell in row:
-                coord = cell.coordinate
-                if cell.value is None:
-                    continue
+        raw_data = []
+        for row in ws.iter_rows(values_only=True):
+            raw_data.append(row)
 
-                new_row = pd.DataFrame([[cell.value, coord]], columns=markdown.columns)
-                markdown = pd.concat([markdown, new_row], ignore_index=True)
+        df = pd.DataFrame(raw_data)
 
-        return markdown
+        df = df.iloc[2:, [2, 3, 4]]  # Columns C, D, E
+        df.columns = ['sheet_name', 'parameter', 'value']
+        df['sheet_name'] = df['sheet_name'].fillna(method='ffill')
+        df = df.dropna(subset=['parameter'])
+
+        structured_dict = {}
+        for _, row in df.iterrows():
+            sheet = row['sheet_name']
+            param = row['parameter']
+            val = row['value']
+            structured_dict.setdefault(sheet, {})[param] = val
+
+        return structured_dict
 
     def write_to_sheet(
         self,
@@ -87,6 +113,6 @@ class SheetEncoder:
             ws = wb[sheet_name]
             for val, cell_list in sheet_data.items():
                 for addr in cell_list:
-                    ws[addr].value = val  # overwrite (or create) value
+                    ws[addr].value = val
 
-        wb.save(output_path)    
+        wb.save(output_path)
