@@ -7,7 +7,7 @@ class SheetEncoder:
     def __init__(self):
         pass
 
-    def encode_sheet_with_formula_and_value(self, filename: str, sheet_names: List[str] = None) -> str:
+    def encode_model(self, filename: str, sheet_names: List[str] = None) -> str:
         """
         Extracts values, formulas, and cell addresses from specified sheets
         of an Excel file and returns a structured JSON string.
@@ -56,7 +56,7 @@ class SheetEncoder:
 
         return json.dumps(excel_data, indent=4)
 
-    def extract_parameter_dict_from_excel(self, sheet_path: str) -> Dict[str, Dict[str, Any]]:
+    def encode_sheet(self, sheet_path: str) -> Dict[str, Dict[str, Any]]:
         """
         Extracts a nested dictionary from an Excel sheet of the form:
         {
