@@ -52,7 +52,7 @@ class LLMadapt:
         Compare two .xlsm files via LLM, generate a result dictionary, and write it to a new .xlsm file.
         """
         # Step 1: Convert Excel sheets to dictionaries
-        model_dict   = self.sheet_encoder.encode_sheet(base_file_path,    sheetnames)
+        model_dict   = self.sheet_encoder.encode_model(base_file_path,    sheetnames)
         country_dict = self.sheet_encoder.encode_sheet(country_file_path, sheetnames)
         output_dict  = self.analyzer.process(model_dict, country_dict)
         print(output_dict)
