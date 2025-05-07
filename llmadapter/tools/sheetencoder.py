@@ -53,8 +53,8 @@ class SheetEncoder:
                     sheet_data["cell_data"].append(cell_info)
 
             excel_data["sheets"].append(sheet_data)
-
-        return json.dumps(excel_data, indent=4)
+            json_data =json.dumps(excel_data, indent=4)
+        return excel_data
 
     def encode_sheet(self, sheet_path: str) -> Dict[str, Dict[str, Any]]:
         """
@@ -96,23 +96,29 @@ class SheetEncoder:
         keep_vba: bool = True
     ):
         """
-        Write `output_dict` back into a copy of `template_path`
-        and save it to `output_path`.
+        Writes `output_dict` back into a copy of `template_path`
+        and saves it to `output_path`.
 
-        output_dict format:
-            {
-              "Sheet1": {"70": ["H14"], "7.5": ["H15"]},
-              "Sheet2": {...}
-            }
+        Parameters
+        ----------
+        output_dict
+            Mapping of sheet name → {cell_address: scalar_value}
+        template_path
+            Existing workbook to copy (preserves formatting/formulas/Macros).
+        output_path
+            Where to save the updated workbook.
+        keep_vba
+            Set True if `template_path` is a .xlsm (macro‑enabled).
         """
-        wb = load_workbook(template_path, keep_vba=keep_vba)
+        wb = load_workbook(template_path, keep_vba=True)
 
-        for sheet_name, sheet_data in output_dict.items():
+        for sheet_name, cell_map in output_dict.items():
             if sheet_name not in wb.sheetnames:
-                raise ValueError(f"Sheet '{sheet_name}' not found in workbook.")
+                raise ValueError(f"Sheet '{sheet_name}' not found in workbook")
+
             ws = wb[sheet_name]
-            for val, cell_list in sheet_data.items():
-                for addr in cell_list:
-                    ws[addr].value = val
+
+            for addr, val in cell_map.items():
+                ws[addr].value = val   # overwrite / insert scalar
 
         wb.save(output_path)
