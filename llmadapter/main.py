@@ -54,7 +54,7 @@ class LLMadapt:
         model_dict   = self.sheet_encoder.encode_model(base_file_path,sheetnames)
         country_dict = self.sheet_encoder.encode_sheet(country_file_path)
         output_dict  = self.analyzer.process(model_dict, country_dict,sheetnames)
-        print(output_dict)
+
         # Step 3: Write the result to new Excel file
         self.sheet_encoder.write_to_sheet(
             output_dict    = output_dict,
