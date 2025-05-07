@@ -6,7 +6,6 @@ from llmadapter.utils.util import delete_folder
 from llmadapter.tools.sheetencoder import SheetEncoder
 from .constants import Status
 
-
 class LLMadapt:
     def __init__(self):
         self.analyzer = AnalyzerAgent()
@@ -34,10 +33,10 @@ class LLMadapt:
         except Exception as e:
             print(f"[FAILED] Model setup failed for: {model_id} — {e}")
             raise
-        # finally:
-        #     temp_dir = os.path.dirname(base_excel_path)
-        #     if os.path.exists(temp_dir):
-        #         rmtree(temp_dir, ignore_errors=True)
+        finally:
+            temp_dir = os.path.dirname(base_excel_path)
+            if os.path.exists(temp_dir):
+                rmtree(temp_dir, ignore_errors=True)
 
         return output_path
 
@@ -52,9 +51,9 @@ class LLMadapt:
         Compare two .xlsm files via LLM, generate a result dictionary, and write it to a new .xlsm file.
         """
         # Step 1: Convert Excel sheets to dictionaries
-        model_dict   = self.sheet_encoder.encode_model(base_file_path,    sheetnames)
-        country_dict = self.sheet_encoder.encode_sheet(country_file_path, sheetnames)
-        output_dict  = self.analyzer.process(model_dict, country_dict)
+        model_dict   = self.sheet_encoder.encode_model(base_file_path,sheetnames)
+        country_dict = self.sheet_encoder.encode_sheet(country_file_path)
+        output_dict  = self.analyzer.process(model_dict, country_dict,sheetnames)
         print(output_dict)
         # Step 3: Write the result to new Excel file
         self.sheet_encoder.write_to_sheet(
