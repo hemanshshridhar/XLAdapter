@@ -3,5 +3,5 @@ env/
 __pycache__/
 data/
 .env
-.DS_Store
+
 output/
