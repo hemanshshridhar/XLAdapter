@@ -1,4 +1,4 @@
-from llmcore.main import LLMCore
+from llmadapter.main import LLMCore
 import asyncio
 import time
 
