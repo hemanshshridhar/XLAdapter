@@ -77,6 +77,7 @@ class LLMadapt:
         country_file_path: str,
         output_file_path: str,
         sheetnames: list,
+        output_log_path: str
     ):
         """
         Compare two .xlsm files via LLM, generate a result dictionary, and write to a new .xlsm file.
@@ -84,13 +85,17 @@ class LLMadapt:
         # Step 1: Convert Excel sheets to dictionaries
         model_dict   = self.sheet_encoder.encode_model(base_file_path, sheetnames)
         country_dict = self.sheet_encoder.encode_sheet(country_file_path)
-        output_dict  = self.analyzer.process(model_dict, country_dict, sheetnames)
+        output_dict , log_table = self.analyzer.process(model_dict, country_dict, sheetnames)
 
         # Step 2: Write the result to new Excel file
         self.sheet_encoder.write_to_sheet(
             output_dict    = output_dict,
             template_path  = base_file_path,
             output_path    = output_file_path
+        )
+        self.sheet_encoder.write_logs(
+            log_table = log_table
+            output_path = output_log_path
         )
 
         return output_file_path
