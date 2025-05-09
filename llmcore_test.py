@@ -8,7 +8,7 @@ input_data_model_setup = {
     "model_excel_path": "/content/drive/MyDrive/txt_data/DUO-E - Early Cost-Effectiveness Model with Dummy Data 30 Oct 2023_OWSA trial_SM.xlsm",
     "sheets_path": "/content/drive/MyDrive/txt_data/Input sheet for adapter.xlsm",
     "output_excel_path" : "/content/drive/MyDrive/txt_data/modified.xlsm",
-    "sheetnames" : ['Settings', 'Unit costs', 'Utilities and AEs', 'HCRU','Drug costs' ]
+    
 }
 
 
