@@ -8,10 +8,6 @@ class SheetEncoder:
         pass
 
     def encode_model(self, filename: str, sheet_names: List[str] = None) -> str:
-        """
-        Extracts values, formulas, and cell addresses from specified sheets
-        of an Excel file and returns a structured JSON string.
-        """
         wb_formula = load_workbook(filename, keep_vba=True)
         wb_value = load_workbook(filename, data_only=True)
 
@@ -53,18 +49,11 @@ class SheetEncoder:
                     sheet_data["cell_data"].append(cell_info)
 
             excel_data["sheets"].append(sheet_data)
-            json_data =json.dumps(excel_data, indent=4)
+            json_data = json.dumps(excel_data, indent=4)
+
         return excel_data
 
     def encode_sheet(self, sheet_path: str) -> Dict[str, Dict[str, Any]]:
-        """
-        Extracts a nested dictionary from an Excel sheet of the form:
-        {
-            "SheetName": {
-                "Parameter Name": "Mean Value"
-            }
-        }
-        """
         wb = load_workbook(sheet_path, data_only=True)
         ws = wb.active  # Use the first sheet
 
@@ -73,7 +62,6 @@ class SheetEncoder:
             raw_data.append(row)
 
         df = pd.DataFrame(raw_data)
-
         df = df.iloc[2:, [2, 3, 4]]  # Columns C, D, E
         df.columns = ['sheet_name', 'parameter', 'value']
         df['sheet_name'] = df['sheet_name'].fillna(method='ffill')
@@ -95,22 +83,7 @@ class SheetEncoder:
         output_path: str,
         keep_vba: bool = True
     ):
-        """
-        Writes `output_dict` back into a copy of `template_path`
-        and saves it to `output_path`.
-
-        Parameters
-        ----------
-        output_dict
-            Mapping of sheet name → {cell_address: scalar_value}
-        template_path
-            Existing workbook to copy (preserves formatting/formulas/Macros).
-        output_path
-            Where to save the updated workbook.
-        keep_vba
-            Set True if `template_path` is a .xlsm (macro‑enabled).
-        """
-        wb = load_workbook(template_path, keep_vba=True)
+        wb = load_workbook(template_path, keep_vba=keep_vba)
 
         for sheet_name, cell_map in output_dict.items():
             if sheet_name not in wb.sheetnames:
@@ -119,6 +92,28 @@ class SheetEncoder:
             ws = wb[sheet_name]
 
             for addr, val in cell_map.items():
-                ws[addr].value = val   # overwrite / insert scalar
+                ws[addr].value = val
 
         wb.save(output_path)
+
+    def write_log_table(
+        self,
+        log_table: List[Dict[str, Any]],
+        output_path: str = "change_log.xlsx"
+    ):
+        """
+        Writes a log table to an Excel file.
+
+        Parameters
+        ----------
+        log_table : List[Dict]
+            List of dictionaries with keys like 'Sheet Name', 'Cell Field', 'Previous Value', 'New Value', 'Cell Address'
+        output_path : str
+            File path to save the Excel file
+        """
+        if not log_table or not isinstance(log_table, list):
+            raise ValueError("❌ log_table must be a non-empty list of dictionaries.")
+
+        df = pd.DataFrame(log_table)
+        df.to_excel(output_path, index=False)
+        print(f"✅ Log table successfully written to: {output_path}")
