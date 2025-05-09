@@ -14,7 +14,7 @@ class AnalyzerAgent:
         self.llm = ChatOpenAI(
             model= "gpt-4o",
             temperature=0,
-            max_tokens= 4000,
+            max_tokens= 20000,
             max_retries= 10,
             streaming=False,
             tags= ["final_response_generator"]
