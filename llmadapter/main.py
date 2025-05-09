@@ -85,7 +85,9 @@ class LLMadapt:
         # Step 1: Convert Excel sheets to dictionaries
         model_dict   = self.sheet_encoder.encode_model(base_file_path, sheetnames)
         country_dict = self.sheet_encoder.encode_sheet(country_file_path)
-        output_dict , log_table = self.analyzer.process(model_dict, country_dict, sheetnames)
+        output = self.analyzer.process(model_dict, country_dict, sheetnames)
+        output_dict = output['output_dict']
+        log_table = output['log_table']
 
         # Step 2: Write the result to new Excel file
         self.sheet_encoder.write_to_sheet(
