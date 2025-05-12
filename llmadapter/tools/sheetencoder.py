@@ -99,21 +99,29 @@ class SheetEncoder:
     def write_log_table(
         self,
         log_table: List[Dict[str, Any]],
-        output_path: str = "change_log.xlsx"
+        output_path: str = "change_log.xlsx",
     ):
         """
-        Writes a log table to an Excel file.
+        Write the change-log table to an Excel file.
 
         Parameters
         ----------
-        log_table : List[Dict]
-            List of dictionaries with keys like 'Sheet Name', 'Cell Field', 'Previous Value', 'New Value', 'Cell Address'
+        log_table : list[dict]
+            Each dict should contain keys like:
+            'Sheet Name', 'Cell Field', 'Cell Address',
+            'Previous Value', 'New Value'
         output_path : str
-            File path to save the Excel file
+            Path where the Excel file will be saved.
         """
         if not log_table or not isinstance(log_table, list):
-            raise ValueError("❌ log_table must be a non-empty list of dictionaries.")
+            raise ValueError("log_table must be a non-empty list of dictionaries.")
+
+        # 🔄 Replace Python None with the literal string "None"
+        for row in log_table:
+            for key, val in row.items():
+                if val is None:
+                    row[key] = "None"
 
         df = pd.DataFrame(log_table)
         df.to_excel(output_path, index=False)
-        print(f"✅ Log table successfully written to: {output_path}")
+        print(f"✓ Log table written to: {output_path}")
