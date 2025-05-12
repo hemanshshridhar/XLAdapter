@@ -58,20 +58,18 @@ Follow this process to compute the correct address for each value in `country_di
 6. **Also keep in mind whether to replace or add**. For some values in the the `country_dict` the corresponding User Input might not be present so in those cases you have to replace the values meaning take the address values as it from the `data_dict_fixed` for those values.
 7. **Check User Input Field**. Taking from the above point always check the User Input column is present for values in `country_dict` or not if present calculate the new address for value addition, if not then we are replacing so just take the existing values.
 
-8. **Moreover** a list containing the sheetnames are provided which contains the names of the sheets in which the values need to be inserted, use the names as it is in the output dictionary so that there is no mismatch of names.
-9. **log table** Also calculate the logs dictionary, that is a dictionary that contains the sheet name---->cell filed name-----> address-----> old value at that address, which is basically the value at the address in the new output dictionary calculated (like the LLM calculats the new address where )----> new value added, the format is same the sheet name nests cell fields name which is mapped t the address, old vlaue and new value.
+6. **Moreover** a list containing the sheetnames are provided which contains the names of the sheets in which the values need to be inserted, use the names as it is in the output dictionary so that there is no mismatch of names.
 ---
 
 ###  OUTPUT FORMAT
 
-- **return one JSON object with keys "output_dict" and "log_tables".
+- **Only return a raw dictionary** on the final line, the address is the key and cell velue is key to the dictioary in the output dictionary`
 -  Do not return markdown blocks, comments, explanations, or variable names.
 - The output must be directly parsable and ingestible by an Excel-writing function.
 
 ---
 
 """
-
 USER_PROMPT = """
 You are given two Excel‑derived dictionaries. Your task is to compute the correct Excel cell addresses where values from the `country_dict` should be inserted into the base model represented by `data_dict_fixed`.
 
