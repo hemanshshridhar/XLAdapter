@@ -47,9 +47,9 @@ class LLMadapt:
         base_excel_path     = input_data_model_setup.get("model_excel_path")
         country_excel_path  = input_data_model_setup.get("sheets_path")
         output_excel_path   = input_data_model_setup.get("output_excel_path")
-
+        output_log_path     = input_data_model_setup.get("output_log_path")
         # Prompt user to select sheets interactively
-        sheetnames = self.get_sheetnames(country_excel_path)
+        sheetnames = self.get_sheetnames(base_excel_path)
 
         print(f"[INFO] Starting model setup for: {model_id}")
 
@@ -58,16 +58,17 @@ class LLMadapt:
                 base_file_path    = base_excel_path,
                 country_file_path = country_excel_path,
                 output_file_path  = output_excel_path,
+                output_log_path   = output_log_path,
                 sheetnames        = sheetnames
             )
             print(f"[SUCCESS] Model setup completed for: {model_id}")
         except Exception as e:
             print(f"[FAILED] Model setup failed for: {model_id} — {e}")
             raise
-        finally:
-            temp_dir = os.path.dirname(base_excel_path)
-            if os.path.exists(temp_dir):
-                rmtree(temp_dir, ignore_errors=True)
+        # finally:
+        #     temp_dir = os.path.dirname(base_excel_path)
+        #     if os.path.exists(temp_dir):
+        #         rmtree(temp_dir, ignore_errors=True)
 
         return output_path
 
@@ -86,8 +87,10 @@ class LLMadapt:
         model_dict   = self.sheet_encoder.encode_model(base_file_path, sheetnames)
         country_dict = self.sheet_encoder.encode_sheet(country_file_path)
         output = self.analyzer.process(model_dict, country_dict, sheetnames)
+        print(output)
         output_dict = output['output_dict']
         log_table = output['log_table']
+        print(log_table)
 
         # Step 2: Write the result to new Excel file
         self.sheet_encoder.write_to_sheet(
@@ -95,8 +98,8 @@ class LLMadapt:
             template_path  = base_file_path,
             output_path    = output_file_path
         )
-        self.sheet_encoder.write_logs(
-            log_table = log_table
+        self.sheet_encoder.write_log_table(
+            log_table = log_table,
             output_path = output_log_path
         )
 
